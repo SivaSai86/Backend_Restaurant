@@ -2,126 +2,118 @@ const db = require("../models/database");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+// ---------------- REGISTER ------------------
 const vendorRegister = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
     const vendorEmailCheckingQuery = `SELECT * FROM vendors WHERE email = '${email}'`;
-    db.query(vendorEmailCheckingQuery, (err, results) => {
-      if (err) {
-        console.log("Your Query is Wrong...!", err);
-        res.status(500).json({ message: "Database Error", error: err });
-        return;
-      }
-      if (results.length > 0) {
+    db.query(vendorEmailCheckingQuery, async (err, results) => {
+      if (err)
+        return res.status(500).json({ message: "Database Error", error: err });
+      if (results.length > 0)
         return res.status(400).json({ message: "Email already taken" });
-      }
-    });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    const vendorQuery = `INSERT INTO vendors (username, email, password) VALUES ('${username}', '${email}', '${hashedPassword}');`;
-    db.query(vendorQuery, (err, results) => {
-      if (err) {
-        console.log("Vendor Query is Wrong...!", err);
-        res.status(500).json({ message: "Error inserting user", error: err });
-        return;
-      }
-      console.log("User successfully added....!");
-      res.status(201).json({ message: "User Added Successfully" });
+      const vendorQuery = `INSERT INTO vendors (username, email, password)
+        VALUES ('${username}', '${email}', '${hashedPassword}')`;
+
+      db.query(vendorQuery, (err) => {
+        if (err)
+          return res
+            .status(500)
+            .json({ message: "Error inserting user", error: err });
+        res.status(201).json({ message: "User Added Successfully" });
+      });
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "internal server error" });
   }
 };
 
+// ---------------- LOGIN ------------------
 const vendorLogin = async (req, res) => {
   const { email, password } = req.body;
+
   try {
-    const getVendor = `SELECT * FROM vendors WHERE email = '${email}'`;
-    db.query(getVendor, async (err, results) => {
-      if (err) {
-        console.log("Vendor Login Query is Wrong...!", err);
-        return res
-          .status(500)
-          .json({ message: "Vendor Login Query is Wrong...!", error: err });
-      }
-      if (results.length === 0) {
-        return res.status(400).json({ message: "Invalid Email" });
-      }
+    const vendorLoginQuery = `SELECT * FROM vendors WHERE email = '${email}'`;
+    db.query(vendorLoginQuery, async (err, results) => {
+      if (err)
+        return res.status(500).json({ message: "Database Error", error: err });
+      if (results.length === 0)
+        return res.status(400).json({ message: "User not found" });
 
-      const vendor = results[0];
-      const secretKey = process.env.WhatIsYourName;
-      const vendorToken = jwt.sign(
-        {
-          vendorId: vendor.id,
-        },
-        secretKey,
-        { expiresIn: "1h" }
-      );
+      const user = results[0];
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatch)
+        return res.status(401).json({ message: "Password Incorrect" });
 
-      const isMatch = await bcrypt.compare(password, vendor.password);
-
-      if (!isMatch || vendor.email !== email) {
-        return res.status(401).json({ error: "Invalid Password and Email" });
-      }
-      res.status(200).json({
-        success: "Password and Email is Matched so Vendor is Login Successful",
-        vendorToken,
+      const token = jwt.sign({ userId: user.id }, process.env.WhatIsYourName, {
+        expiresIn: "1d",
       });
-      // console.log(email);
-      // console.log(vendorToken);
+
+      res.status(200).json({ message: "Login Success", token });
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Login Route internal server error" });
+    res.status(500).json({ message: "internal server error" });
   }
 };
 
+// ---------------- GET ALL VENDORS ------------------
 const getAllVendors = async (req, res) => {
   try {
     const getVendorsQuery = `
-      SELECT v.id, v.username, v.email, v.password, 
+      SELECT v.id, v.username, v.email,
       f.firmName, f.area, f.category, f.region, f.offer, f.image, f.vendor_id
       FROM vendors v
       LEFT JOIN firms f ON f.vendor_id = v.id;
     `;
+
     db.query(getVendorsQuery, (err, results) => {
-      if (err) {
-        console.log("get Vendors Query is Wrong...!", err);
-        res.status(404).json({ message: "Error get vendors", error: err });
-        return;
-      }
+      if (err)
+        return res
+          .status(404)
+          .json({ message: "Error get vendors", error: err });
       res
         .status(200)
         .json({ message: "get vendors data Successfully", data: results });
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "internal server error" });
   }
 };
 
+// ---------------- GET SINGLE VENDOR BY ID ------------------
 const getVendorById = async (req, res) => {
   const vendorId = req.params.id;
 
   try {
-    const getVendorQuery = `SELECT * FROM vendors v JOIN firms f ON f.vendor_id = v.id WHERE v.id = ${vendorId};`;
+    const getVendorQuery = `
+      SELECT v.id, v.username, v.email,
+      f.firmName, f.area, f.category, f.region, f.offer, f.image, f.vendor_id
+      FROM vendors v
+      LEFT JOIN firms f ON f.vendor_id = v.id
+      WHERE v.id = ${vendorId};
+    `;
+
     db.query(getVendorQuery, (err, results) => {
-      if (err) {
-        console.log("get Vendor Query is Wrong...!", err);
-        res.status(404).json({ message: "vendor not found", error: err });
-        return;
-      }
+      if (err)
+        return res
+          .status(404)
+          .json({ message: "vendor not found", error: err });
       res
         .status(200)
         .json({ message: "get vendor data Successfully", data: results });
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "internal server error" });
   }
 };
 
-module.exports = { vendorRegister, vendorLogin, getAllVendors, getVendorById };
+module.exports = {
+  vendorRegister,
+  vendorLogin,
+  getAllVendors,
+  getVendorById,
+};
