@@ -24,13 +24,15 @@ db.connect((err) => {
 app.use(bodyParser.json());
 
 // Routes
-app.use("/", (req, res) => {
-  res.send("<h1> My First Project....!</h1>");
-});
 app.use("/vendor", vendorRoutes);
 app.use("/firm", firmsRoutes);
 app.use("/product", productRoutes);
 app.use("/uploads", express.static("uploads"));
+
+// 👇 DEFAULT ROUTE LAST LO Veyali
+app.get("/", (req, res) => {
+  res.send("<h1> My First Project....!</h1>");
+});
 
 app.listen(PORT, () => {
   console.log(`Your Server is Running on PORT ${PORT}....!`);
