@@ -81,7 +81,12 @@ const vendorLogin = async (req, res) => {
 
 const getAllVendors = async (req, res) => {
   try {
-    const getVendorsQuery = `SELECT * FROM vendors v JOIN firms f ON f.vendor_id = v.id;`;
+    const getVendorsQuery = `
+      SELECT v.id, v.username, v.email, v.password, 
+      f.firmName, f.area, f.category, f.region, f.offer, f.image, f.vendor_id
+      FROM vendors v
+      LEFT JOIN firms f ON f.vendor_id = v.id;
+    `;
     db.query(getVendorsQuery, (err, results) => {
       if (err) {
         console.log("get Vendors Query is Wrong...!", err);
