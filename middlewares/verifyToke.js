@@ -2,7 +2,7 @@ const db = require("../models/database");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
-const secretKey = process.env.WhatIsYourName;
+const secretKey = process.env.JWT_SECRET;
 
 const verifyToken = async (req, res, next) => {
   const token = req.headers.token;
