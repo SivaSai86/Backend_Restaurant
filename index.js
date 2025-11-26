@@ -6,11 +6,13 @@ const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+app.use(cors());
 
 // DB Connection
 db.connect((err) => {
