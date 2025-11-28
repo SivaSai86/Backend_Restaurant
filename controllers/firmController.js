@@ -20,9 +20,9 @@ const addFirm = async (req, res) => {
   console.log(req.file);
 
   const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
-  VALUES ('${firmName}', '${area}', '${category}', '${region}', '${offer}', '${image}', '${vendor_id}')`;
+  VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-  db.query(query, (err, results) => {
+  db.query(query, [firmName, area, category, region, offer, image, vendor_id], (err, results) => {
     if (err) {
       return res.status(500).json({ message: "DB insert error", error: err });
     }

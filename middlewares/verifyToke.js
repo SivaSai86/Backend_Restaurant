@@ -12,7 +12,7 @@ const verifyToken = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(token, secretKey);
-    req.vendorId = decoded.vendorId;
+    req.vendorId = decoded.userId;  // Token contains userId, not vendorId
     next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or Expired Token" });
