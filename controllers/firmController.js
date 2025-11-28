@@ -14,23 +14,43 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).single("image");
 
 const addFirm = async (req, res) => {
-  const { firmName, area, category, region, offer, vendor_id } = req.body;
-  const image = req.file ? req.file.filename : null;
-  console.log(req.body); // firmName, area, category, region, offer, vendor_id
-  console.log(req.file);
+  try {
+    const { firmName, area, category, region, offer, vendor_id } = req.body;
+    const image = req.file ? req.file.filename : null;
 
-  const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
-  VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
 
-  db.query(query, [firmName, area, category, region, offer, image, vendor_id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "DB insert error", error: err });
+    if (!firmName || !area || !category || !vendor_id || !image) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        received: { firmName, area, category, vendor_id, image },
+      });
     }
-    res.status(200).json({ 
-      message: "Firm added successfully",
-      firmId: results.insertId 
-    });
-  });
+
+    const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(
+      query,
+      [firmName, area, category, region, offer, image, vendor_id],
+      (err, results) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res
+            .status(500)
+            .json({ message: "DB insert error", error: err.message });
+        }
+        res.status(200).json({
+          message: "Firm added successfully",
+          firmId: results.insertId,
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Catch error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 const deleteFirm = async (req, res) => {

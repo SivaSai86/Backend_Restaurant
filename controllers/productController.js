@@ -14,24 +14,48 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).single("image");
 
 const addProduct = async (req, res) => {
-  const { productName, price, category, bestSeller, description } = req.body; // <-- destination remove, description add
-  const image = req.file ? req.file.filename : null;
-  const firmId = req.params.firmId;
+  try {
+    const { productName, price, category, bestSeller, description } = req.body; // <-- destination remove, description add
+    const image = req.file ? req.file.filename : null;
+    const firmId = req.params.firmId;
 
-  const productQuery = `
-    INSERT INTO products(productName, price, category, bestSeller, description, image, firm_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+    console.log("Firm ID:", firmId);
 
-  db.query(productQuery, [productName, price, category, bestSeller, description, image, firmId], (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "DB insert error", error: err });
+    if (!productName || !price || !firmId || !image) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        received: { productName, price, firmId, image },
+      });
     }
-    res.status(200).json({
-      message: "Product added successfully",
-      data: results,
-    });
-  });
+
+    const productQuery = `
+      INSERT INTO products(productName, price, category, bestSeller, description, image, firm_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      productQuery,
+      [productName, price, category, bestSeller, description, image, firmId],
+      (err, results) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res
+            .status(500)
+            .json({ message: "DB insert error", error: err.message });
+        }
+        res.status(200).json({
+          message: "Product added successfully",
+          productId: results.insertId,
+          data: results,
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Catch error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 const getProducts = async (req, res) => {

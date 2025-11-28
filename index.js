@@ -37,6 +37,15 @@ app.get("/", (req, res) => {
   res.send("<h1> My First Project....!</h1>");
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(err.status || 500).json({
+    message: "Internal Server Error",
+    error: err.message,
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Your Server is Running on PORT ${PORT}....!`);
 });
