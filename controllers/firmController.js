@@ -26,7 +26,10 @@ const addFirm = async (req, res) => {
     if (err) {
       return res.status(500).json({ message: "DB insert error", error: err });
     }
-    res.status(200).json({ message: "Firm added successfully" });
+    res.status(200).json({ 
+      message: "Firm added successfully",
+      firmId: results.insertId 
+    });
   });
 };
 

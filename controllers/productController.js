@@ -20,10 +20,10 @@ const addProduct = async (req, res) => {
 
   const productQuery = `
     INSERT INTO products(productName, price, category, bestSeller, description, image, firm_id)
-    VALUES ('${productName}', '${price}', '${category}', '${bestSeller}', '${description}', '${image}', '${firmId}')
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(productQuery, (err, results) => {
+  db.query(productQuery, [productName, price, category, bestSeller, description, image, firmId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: "DB insert error", error: err });
     }
@@ -37,8 +37,8 @@ const addProduct = async (req, res) => {
 const getProducts = async (req, res) => {
   const firmId = req.params.firmId;
 
-  const firmQuery = `SELECT firmName FROM firms WHERE id = '${firmId}'`;
-  db.query(firmQuery, (err, firmResult) => {
+  const firmQuery = `SELECT firmName FROM firms WHERE id = ?`;
+  db.query(firmQuery, [firmId], (err, firmResult) => {
     if (err) {
       return res.status(500).json({ message: "DB fetch error", error: err });
     }
@@ -49,8 +49,8 @@ const getProducts = async (req, res) => {
 
     const firmName = firmResult[0].firmName;
 
-    const productsQuery = `SELECT * FROM products WHERE firm_id = '${firmId}'`;
-    db.query(productsQuery, (err, productResults) => {
+    const productsQuery = `SELECT * FROM products WHERE firm_id = ?`;
+    db.query(productsQuery, [firmId], (err, productResults) => {
       if (err) {
         return res.status(500).json({ message: "DB fetch error", error: err });
       }
@@ -75,9 +75,9 @@ const getProducts = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const productId = req.params.productId;
 
-  const deleteQuery = `DELETE FROM products WHERE id = '${productId}'`;
+  const deleteQuery = `DELETE FROM products WHERE id = ?`;
 
-  db.query(deleteQuery, (err, result) => {
+  db.query(deleteQuery, [productId], (err, result) => {
     if (err) {
       return res.status(500).json({ message: "DB delete error", error: err });
     }

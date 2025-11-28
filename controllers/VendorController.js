@@ -7,8 +7,8 @@ const vendorRegister = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    const vendorEmailCheckingQuery = `SELECT * FROM vendors WHERE email = '${email}'`;
-    db.query(vendorEmailCheckingQuery, async (err, results) => {
+    const vendorEmailCheckingQuery = `SELECT * FROM vendors WHERE email = ?`;
+    db.query(vendorEmailCheckingQuery, [email], async (err, results) => {
       if (err)
         return res.status(500).json({ message: "Database Error", error: err });
       if (results.length > 0)
@@ -17,9 +17,9 @@ const vendorRegister = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const vendorQuery = `INSERT INTO vendors (username, email, password)
-        VALUES ('${username}', '${email}', '${hashedPassword}')`;
+        VALUES (?, ?, ?)`;
 
-      db.query(vendorQuery, (err) => {
+      db.query(vendorQuery, [username, email, hashedPassword], (err) => {
         if (err)
           return res
             .status(500)
@@ -37,8 +37,8 @@ const vendorLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const vendorLoginQuery = `SELECT * FROM vendors WHERE email = '${email}'`;
-    db.query(vendorLoginQuery, async (err, results) => {
+    const vendorLoginQuery = `SELECT * FROM vendors WHERE email = ?`;
+    db.query(vendorLoginQuery, [email], async (err, results) => {
       if (err)
         return res.status(500).json({ message: "Database Error", error: err });
       if (results.length === 0)
@@ -94,10 +94,10 @@ const getVendorById = async (req, res) => {
       f.firmName, f.area, f.category, f.region, f.offer, f.image, f.vendor_id
       FROM vendors v
       LEFT JOIN firms f ON f.vendor_id = v.id
-      WHERE v.id = ${vendorId};
+      WHERE v.id = ?;
     `;
 
-    db.query(getVendorQuery, (err, results) => {
+    db.query(getVendorQuery, [vendorId], (err, results) => {
       if (err)
         return res
           .status(404)
