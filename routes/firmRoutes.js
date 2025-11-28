@@ -7,8 +7,8 @@ const router = express.Router();
 router.post(
   "/add-firm",
   verifyToken,
-  firmController.addFirm,
-  firmController.upload
+  firmController.upload,
+  firmController.addFirm
 );
 router.delete("/:firmId", verifyToken, firmController.deleteFirm);
 

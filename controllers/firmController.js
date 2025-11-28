@@ -16,6 +16,8 @@ const upload = multer({ storage }).single("image");
 const addFirm = async (req, res) => {
   const { firmName, area, category, region, offer, vendor_id } = req.body;
   const image = req.file ? req.file.filename : null;
+  console.log(req.body); // firmName, area, category, region, offer, vendor_id
+  console.log(req.file);
 
   const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
   VALUES ('${firmName}', '${area}', '${category}', '${region}', '${offer}', '${image}', '${vendor_id}')`;
