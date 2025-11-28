@@ -4,7 +4,12 @@ const verifyToken = require("../middlewares/verifyToke");
 
 const router = express.Router();
 
-router.post("/add-firm", verifyToken, firmController.addFirm);
+router.post(
+  "/add-firm",
+  verifyToken,
+  firmController.addFirm,
+  firmController.uploadFirmImage
+);
 router.delete("/:firmId", verifyToken, firmController.deleteFirm);
 
 router.get("/uploads/:imageName", (req, res) => {
