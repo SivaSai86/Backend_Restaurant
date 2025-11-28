@@ -8,7 +8,7 @@ router.post(
   "/add-firm",
   verifyToken,
   firmController.addFirm,
-  firmController.uploadFirmImage
+  firmController.upload
 );
 router.delete("/:firmId", verifyToken, firmController.deleteFirm);
 
