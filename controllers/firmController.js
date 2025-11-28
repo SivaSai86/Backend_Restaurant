@@ -33,9 +33,9 @@ const addFirm = async (req, res) => {
 const deleteFirm = async (req, res) => {
   const firmId = req.params.firmId;
 
-  const deleteQuery = `DELETE FROM firms WHERE id = '${firmId}'`;
+  const deleteQuery = `DELETE FROM firms WHERE id = ?`;
 
-  db.query(deleteQuery, (err, result) => {
+  db.query(deleteQuery, [firmId], (err, result) => {
     if (err) {
       return res.status(500).json({ message: "DB delete error", error: err });
     }
