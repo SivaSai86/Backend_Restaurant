@@ -40,17 +40,18 @@ const addFirm = async (req, res) => {
     db.query(checkQuery, [vendor_id], (checkErr, checkResults) => {
       if (checkErr) {
         console.error("Database error:", checkErr);
-        return res.status(500).json({ 
-          message: "DB query error", 
-          error: checkErr.message 
+        return res.status(500).json({
+          message: "DB query error",
+          error: checkErr.message,
         });
       }
 
       // If firm already exists, return error
       if (checkResults.length > 0) {
         return res.status(400).json({
-          message: "Vendor can only add one firm. A firm already exists for this vendor.",
-          firmId: checkResults[0].id
+          message:
+            "Vendor can only add one firm. A firm already exists for this vendor.",
+          firmId: checkResults[0].id,
         });
       }
 
