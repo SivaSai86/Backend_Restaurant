@@ -35,25 +35,46 @@ const addFirm = async (req, res) => {
       });
     }
 
-    const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-    db.query(
-      query,
-      [firmName, area, category, region, offer, image, vendor_id],
-      (err, results) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res
-            .status(500)
-            .json({ message: "DB insert error", error: err.message });
-        }
-        res.status(200).json({
-          message: "Firm added successfully",
-          firmId: results.insertId,
+    // Check if vendor already has a firm
+    const checkQuery = `SELECT id FROM firms WHERE vendor_id = ?`;
+    db.query(checkQuery, [vendor_id], (checkErr, checkResults) => {
+      if (checkErr) {
+        console.error("Database error:", checkErr);
+        return res.status(500).json({ 
+          message: "DB query error", 
+          error: checkErr.message 
         });
       }
-    );
+
+      // If firm already exists, return error
+      if (checkResults.length > 0) {
+        return res.status(400).json({
+          message: "Vendor can only add one firm. A firm already exists for this vendor.",
+          firmId: checkResults[0].id
+        });
+      }
+
+      // If no firm exists, proceed with insertion
+      const query = `INSERT INTO firms (firmName, area, category, region, offer, image, vendor_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+      db.query(
+        query,
+        [firmName, area, category, region, offer, image, vendor_id],
+        (err, results) => {
+          if (err) {
+            console.error("Database error:", err);
+            return res
+              .status(500)
+              .json({ message: "DB insert error", error: err.message });
+          }
+          res.status(200).json({
+            message: "Firm added successfully",
+            firmId: results.insertId,
+          });
+        }
+      );
+    });
   } catch (error) {
     console.error("Catch error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
